@@ -1,0 +1,149 @@
+﻿<Window x:Name="MainWindow1" x:Class="configATS.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:configATS"
+        mc:Ignorable="d"
+        Title="ATS configuration" Height="530" Width="1000" Background="#FF646464" FontSize="20" ResizeMode="NoResize" Cursor="Arrow">
+
+    <Grid>
+
+        <DataGrid x:Name="dgPrismCoords" Width="400" Height="410" FontSize="11" FontFamily="Arial" 
+                  HorizontalAlignment="Left" Margin="20,10,0,0" VerticalAlignment="Top" Background="#FFB7B2B2"  
+                  GridLinesVisibility="None" AlternatingRowBackground="#FFE0DDDD" MinColumnWidth="70" 
+                  AutoGenerateColumns="False" SelectionChanged="dgPrismCoords_SelectionChanged"
+                  >
+            <DataGrid.Columns>
+                <DataGridTextColumn Width ="100" Header="Prism" Binding="{Binding Name}" >
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="HorizontalAlignment" Value="Left" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Width ="85"  Header="Easting" Binding="{Binding E, StringFormat=F3}">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="HorizontalAlignment" Value="Right" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Width ="85"  Header="Northing" Binding="{Binding N, StringFormat=F3}" >
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="HorizontalAlignment" Value="Right" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Width ="50*"  Header="Height" Binding="{Binding H, StringFormat=F3}">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="HorizontalAlignment" Value="Right" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+
+
+
+
+
+
+
+        <DataGrid x:Name="dgOrientation" Width="432" Height="170" FontSize="11" FontFamily="Arial" HorizontalAlignment="Left" Margin="450,10,0,0" 
+                  VerticalAlignment="Top" Background="#FFB7B2B2"  GridLinesVisibility="None" AlternatingRowBackground="#FFE0DDDD" MinColumnWidth="70" 
+                  AutoGenerateColumns="False" SelectionChanged="dgOrientation_SelectionChanged" 
+                  >
+            <DataGrid.Columns>
+                <DataGridCheckBoxColumn Width ="5"  Binding="{Binding  IsUsed, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+
+                </DataGridCheckBoxColumn>
+                <DataGridTextColumn Width ="100"  Header="Target" Binding="{Binding Name, StringFormat=F2, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="HorizontalAlignment" Value="Left" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Width ="85"  Header="Hor.Angle" Binding="{Binding HA, StringFormat=F5, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" >
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="HorizontalAlignment" Value="Right" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Width ="85"  Header="Vert.Angle" Binding="{Binding VA, StringFormat=F5, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="HorizontalAlignment" Value="Right" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Width ="85*"  Header="Slope Dist" Binding="{Binding SD, StringFormat=F3, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="HorizontalAlignment" Value="Right" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+
+
+        <Button x:Name="btnPrismCoords" Content="Prism Coordinates" HorizontalAlignment="Left" Margin="155,430,0,0" VerticalAlignment="Top" Width="120" Height="30" FontSize="12" FontFamily="Arial" Click="btnPrismCoords_Click"/>
+        <Button x:Name="btnOrientation" Content="Orientation gka file" HorizontalAlignment="Left" Margin="612,195,0,0" VerticalAlignment="Top" Width="120" Height="30" FontSize="12" FontFamily="Arial" Click="btnOrientation_Click"/>
+        <TextBox x:Name="tbATS_name" Text = "ATS01" TextAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Left" Height="25" Margin="450,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center" Width="80" FontSize="11" FontFamily="Arial" TextChanged="tbATS_name_TextChanged"/>
+        <TextBox x:Name="tbATS_E" Text = "0.000" TextAlignment="Right" VerticalContentAlignment="Center" HorizontalAlignment="Left" Height="26" Margin="550,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center" Width="80"  FontSize="11" FontFamily="Arial" TextChanged="tbATS_E_TextChanged"/>
+        <TextBox x:Name="tbATS_N" Text = "0.000" TextAlignment="Right" VerticalContentAlignment="Center"  HorizontalAlignment="Left" Height="26" Margin="650,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center" Width="80"  FontSize="11" FontFamily="Arial"/>
+        <TextBox x:Name="tbATS_H" Text = "0.000" TextAlignment="Right" VerticalContentAlignment="Center"  HorizontalAlignment="Left" Height="25" Margin="750,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center" Width="80"  FontSize="11" FontFamily="Arial" TextChanged="tbATS_H_TextChanged"/>
+
+
+
+
+        <DataGrid x:Name="dgResults" Width="319" Height="130" FontSize="11" FontFamily="Arial" HorizontalAlignment="Left" Margin="450,290,0,0" 
+            VerticalAlignment="Top" Background="#FFB7B2B2"  GridLinesVisibility="None" AlternatingRowBackground="#FFE0DDDD" MinColumnWidth="70" 
+            AutoGenerateColumns="False" SelectionChanged="dgOrientation_SelectionChanged" 
+            >
+            <DataGrid.Columns>
+
+                <DataGridTextColumn Width ="100"  Header="Target" Binding="{Binding Name, Mode=TwoWay, StringFormat=F2, UpdateSourceTrigger=PropertyChanged}">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="HorizontalAlignment" Value="Left" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Width ="30"  Header="dS"  Binding="{Binding dS, Mode=TwoWay, StringFormat=F3, UpdateSourceTrigger=PropertyChanged}">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="HorizontalAlignment" Value="Right" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Width ="30"  Header="dH"  Binding="{Binding dH, Mode=TwoWay, StringFormat=F3, UpdateSourceTrigger=PropertyChanged}">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="HorizontalAlignment" Value="Right" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Width ="30*"  Header="Orientation" Binding="{Binding OrrCorr, Mode=TwoWay, StringFormat=F6, UpdateSourceTrigger=PropertyChanged}">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="HorizontalAlignment" Value="Right" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+        <Button x:Name="btnCompute" Content="Transformation" HorizontalAlignment="Left" Margin="859,388,0,0" VerticalAlignment="Top" Width="120" Height="30" FontSize="12" FontFamily="Arial" Click="btnCompute_Click" />
+        <Button x:Name="btnTSfile" Content="Generate ts file" HorizontalAlignment="Left" Margin="861,437,0,0" VerticalAlignment="Top" Width="120" Height="30" FontSize="12" FontFamily="Arial" Click="btnPrismCoords_Click"/>
+        <TextBox x:Name="tbOrientationCorr" Text = "0.00000" TextAlignment="Right" VerticalContentAlignment="Center"  HorizontalAlignment="Left" Height="25" Margin="689,430,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="80"  FontSize="11" FontFamily="Arial" TextChanged="tbOrientationCorr_TextChanged" />
+
+
+    </Grid>
+</Window>
