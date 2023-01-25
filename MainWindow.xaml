@@ -68,14 +68,14 @@
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
-                <DataGridTextColumn Width ="85"  Header="Hor.Angle" Binding="{Binding HA, StringFormat=F5, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" >
+                <DataGridTextColumn Width ="85"  Header="Hor.Angle" Binding="{Binding HA, StringFormat=F4, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" >
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="{x:Type TextBlock}">
                             <Setter Property="HorizontalAlignment" Value="Right" />
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
-                <DataGridTextColumn Width ="85"  Header="Vert.Angle" Binding="{Binding VA, StringFormat=F5, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                <DataGridTextColumn Width ="85"  Header="Vert.Angle" Binding="{Binding VA, StringFormat=F4, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="{x:Type TextBlock}">
                             <Setter Property="HorizontalAlignment" Value="Right" />
@@ -131,7 +131,7 @@
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
-                <DataGridTextColumn Width ="30*"  Header="Orientation" Binding="{Binding OrrCorr, Mode=TwoWay, StringFormat=F6, UpdateSourceTrigger=PropertyChanged}">
+                <DataGridTextColumn Width ="30*"  Header="Orientation" Binding="{Binding OrrCorr, Mode=TwoWay, StringFormat=F4, UpdateSourceTrigger=PropertyChanged}">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="{x:Type TextBlock}">
                             <Setter Property="HorizontalAlignment" Value="Right" />
@@ -141,7 +141,7 @@
             </DataGrid.Columns>
         </DataGrid>
         <Button x:Name="btnCompute" Content="Transformation" HorizontalAlignment="Left" Margin="859,388,0,0" VerticalAlignment="Top" Width="120" Height="30" FontSize="12" FontFamily="Arial" Click="btnCompute_Click" />
-        <Button x:Name="btnTSfile" Content="Generate ts file" HorizontalAlignment="Left" Margin="861,437,0,0" VerticalAlignment="Top" Width="120" Height="30" FontSize="12" FontFamily="Arial" Click="btnPrismCoords_Click"/>
+        <Button x:Name="btnTSfile" Content="Generate ts file" HorizontalAlignment="Left" Margin="861,437,0,0" VerticalAlignment="Top" Width="120" Height="30" FontSize="12" FontFamily="Arial" Click="btnTSfile_Click" />
         <TextBox x:Name="tbOrientationCorr" Text = "0.00000" TextAlignment="Right" VerticalContentAlignment="Center"  HorizontalAlignment="Left" Height="25" Margin="689,430,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="80"  FontSize="11" FontFamily="Arial" TextChanged="tbOrientationCorr_TextChanged" />
 
 

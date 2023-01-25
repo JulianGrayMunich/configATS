@@ -16,6 +16,8 @@ using System.Windows.Documents;
 using System.Windows.Shapes;
 using System.Xml.Linq;
 
+using Microsoft.Win32;
+
 #pragma warning disable IDE0059
 #pragma warning disable IDE1006
 #pragma warning disable CS8600
@@ -61,6 +63,7 @@ namespace configATS
 
             double NP;
             double EP;
+            double dblUpdatedOrrCorr = 0.0;
 
             int iIterationCounter = 0;
             
@@ -106,6 +109,7 @@ namespace configATS
                 iPrismCounter++;
             }
 
+           
             // Read the Orientation observations that are ticked
             // count the number of orientation observations
 
@@ -125,9 +129,6 @@ namespace configATS
                 }
             }
 
-
-
-
             if (iOrrObs < 1)
             {
                 MessageBox.Show("Insufficient targets for Transformation");
@@ -135,6 +136,7 @@ namespace configATS
             }
 
             double dblDs = 100;
+
             List<TransCoords> transCoords = new(); // Resets the list
             do
             {
@@ -153,6 +155,8 @@ namespace configATS
                     double Eobs = Math.Round((dblATS_E + (Math.Sin(dblBearing) * Hdist)), 3);
                     double Nobs = Math.Round((dblATS_N + (Math.Cos(dblBearing) * Hdist)), 3);
                     double Hobs = Math.Round((Math.Tan(dblVAngle) * Hdist), 3);
+
+                    //MessageBox.Show(strName + ": " + Eobs + "  " + Nobs + "  " + Hobs);
 
                     // now find the coordinates of this target from the prism coordinate list
                     double Ectrl = 0.0;
@@ -205,8 +209,6 @@ Continue1:
                 SK = Math.Sqrt((C * C) + (D * D));
                 T = Math.Atan(D / C);
 
-
-
                 // Compute the transformed value for the ATS
 
                 NP = Math.Round((A + (C * dblATS_N) + (D * dblATS_E)), 3);
@@ -216,60 +218,70 @@ Continue1:
                 // Update the ATS coordinates
                 dblATSprevious_E = EP;
                 dblATSprevious_N = NP;
-                dblATS_orientation = Math.Round(T / dblGonToRad,6);
+
                 iIterationCounter++;
                 dblATS_E = EP;
                 dblATS_N = NP;
-                //MessageBox.Show("E: " + EP + "  N: " + NP + "  (" + dblDs + ")  Iteration: " + iIterationCounter);
+                //MessageBox.Show("ATS: " + EP + " " + NP + " Iteration: " + iIterationCounter);
 
-            } while ((iIterationCounter < 5) ||(dblDs < 0.001));
+                // Compute the orientation correction
+                dblATS_orientation = 0;
+
+                for (int i = 0; i <= iOrrObs; i++)
+                {
+                    var answer = Join(dblATS_E, dblATS_N, transCoords[i].Emain, transCoords[i].Nmain);
+                    double dblBearingAB = answer.Item1 / dblGonToRad;    // bearing in Gons
+
+                    //double dblDiff = Math.Round(dblBearingAB - transCoords[i].ObservedHA, 4);
+                    //MessageBox.Show(Convert.ToString(dblDiff));
+
+                    dblATS_orientation = dblATS_orientation+(dblBearingAB - transCoords[i].ObservedHA);
+                }
+
+                dblATS_orientation = Math.Round(dblATS_orientation / (iOrrObs + 1),6);
+
+                tbOrientationCorr.Text = String.Format("{0:0.0000}", dblATS_orientation);
 
 
+            } while ((dblDs > 0.001));
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-            // Now compute the statistics and update the orientation correction
-            double dblUpdatedOrrCorr = 0.0;
+            // Now compute the Elevation of the total station
             double dblMeanElevation = 0.0;
+            for (int i = 0; i <= iOrrObs; i++)
+            {
+                var answer = Join(dblATS_E, dblATS_N, transCoords[i].Emain, transCoords[i].Nmain);
+                double dblDistAB = answer.Item2;
+                double dblDh = Math.Cos(dblGonToRad * transCoords[i].ObservedVA) * transCoords[i].ObservedSD;
+                dblMeanElevation = dblMeanElevation + transCoords[i].Hmain - dblDh;
+            }
+
+            dblATS_H = Math.Round((dblMeanElevation / (iOrrObs + 1)), 3);
+
+            //MessageBox.Show("ATS H: " + dblATS_H);
+
+            // Compute the differences
+
+
+            dblMeanElevation = 0.0;
             for (int i = 0; i <= iOrrObs; i++)
             {
                 var answer = Join(dblATS_E, dblATS_N, transCoords[i].Emain, transCoords[i].Nmain);
                 double dblBearingAB = answer.Item1 / dblGonToRad;
                 double dblDistAB = answer.Item2;
-                transCoords[i].dS = dblDistAB- (Math.Sin(dblGonToRad * transCoords[i].ObservedVA) * transCoords[i].ObservedSD);
-                transCoords[i].OrrCorr = Math.Round((dblBearingAB - transCoords[i].ObservedHA),6);
-                dblUpdatedOrrCorr = dblUpdatedOrrCorr + transCoords[i].OrrCorr;
+                transCoords[i].dS = Math.Round(dblDistAB- (Math.Sin(dblGonToRad * transCoords[i].ObservedVA) * transCoords[i].ObservedSD),3);
+                transCoords[i].OrrCorr = Math.Round(dblATS_orientation-(dblBearingAB - transCoords[i].ObservedHA),4);
                 double dblDh = Math.Cos(dblGonToRad * transCoords[i].ObservedVA) * transCoords[i].ObservedSD;
-                transCoords[i].dH = Math.Round((transCoords[i].Hmain - dblDh),3);
-                dblMeanElevation = dblMeanElevation + transCoords[i].dH;
+                double dblATSZ = transCoords[i].Hmain - dblDh;
+                transCoords[i].dH = Math.Round((dblATS_H - dblATSZ),3);
             }
-
-            dblATS_H = Math.Round((dblMeanElevation / (iOrrObs + 1)),3);
-
-            for (int i = 0; i <= iOrrObs; i++)
-            {
-                transCoords[i].dH = Math.Round((transCoords[i].Hmain - dblATS_H), 3);
-            }
-
-            dblUpdatedOrrCorr = Math.Round(dblUpdatedOrrCorr / (iOrrObs + 1),6);
 
             // Update the display
             dgResults.ItemsSource = transCoords;
-            tbATS_E.Text = Convert.ToString(dblATS_E);
-            tbATS_N.Text = Convert.ToString(dblATS_N);
-            tbATS_H.Text = Convert.ToString(dblATS_H);
-            tbOrientationCorr.Text = Convert.ToString(dblUpdatedOrrCorr);
+
+            tbATS_E.Text = String.Format("{0:0.000}", dblATS_E);  
+            tbATS_N.Text = String.Format("{0:0.000}", dblATS_N);
+            tbATS_H.Text = String.Format("{0:0.000}", dblATS_H);
+
 ExitPoint:;
 
         }
@@ -293,6 +305,7 @@ ExitPoint:;
             // Parse the CSV file to the PrismCoords list
 
             var reader = new StreamReader(File.OpenRead(strSelectedFile));
+            
             while (!reader.EndOfStream)
             {
                 var line = reader.ReadLine();
@@ -302,6 +315,33 @@ ExitPoint:;
                 double dblH = Convert.ToDouble(strList[3]);
                 prismCoords.Add(new PrismCoords() { Name = strList[0], E = dblE, N = dblN, H = dblH });
             }
+
+            int iPrismsCounter = prismCoords.Count;
+
+            // Check for duplicate prisms
+
+            int i = 0;
+            do
+            {
+                string strName = prismCoords[i].Name;
+
+                int iCount = 0;
+                int j = 0;
+                do
+                {
+                    if (prismCoords[j].Name== strName) { iCount++; }
+                    j++;
+                } while (j < iPrismsCounter);
+
+
+                if (iCount>1)
+                {
+                    MessageBox.Show("Duplicate: "+prismCoords[i].Name);
+                    prismCoords[i].Name = prismCoords[i].Name + "****";
+                }
+                i++;
+            } while (i < iPrismsCounter);
+
 
             // Write this to the DataGrid
             //this.dgPrismCoords.ItemsSource = prismCoords;
@@ -378,6 +418,11 @@ Next:
                 dblHa = Convert.ToDouble(strList[10]);
                 dblVa = Convert.ToDouble(strList[12]);
                 dblSd = Convert.ToDouble(strList[7]);
+
+                if (dblSd==0)
+                {
+                    MessageBox.Show("No reading: " + strName+" face "+ strList[6]);
+                }
 
                 if (strList[6] == "2")
                 {
@@ -483,10 +528,125 @@ NextStep:
 
 
 
+        private void btnTSfile_Click(object sender, RoutedEventArgs e)
+        {
+            double dblGonToRad = 0.0157079633;
+
+            var strLine = new List<string>();
+
+            // read the ATS coordinate
+            string strATSname = tbATS_name.Text;
+            double dblATS_N = Convert.ToDouble(tbATS_N.Text.Replace(",", "."));
+            double dblATS_E = Convert.ToDouble(tbATS_E.Text.Replace(",", "."));
+            double dblATS_H = Convert.ToDouble(tbATS_H.Text.Replace(",", "."));
+
+            double dblOrrCorr = Convert.ToDouble(tbOrientationCorr.Text.Replace(",", "."));
+
+            List<PrismCoords> prismCoords = new();
+            int iPrismCounter = -1;
+            foreach (var item in dgPrismCoords.Items.OfType<PrismCoords>())
+            {
+                var name = item.Name;
+                var E = Convert.ToDouble(item.E);
+                var N = Convert.ToDouble(item.N);
+                var H = Convert.ToDouble(item.H);
+                prismCoords.Add(new PrismCoords() { Name = name, E = E, N = N, H = H });
+                iPrismCounter++;
+            }
+
+            // Now generate the ts file data
+            // String[] strLine = new String[500];
+
+            // First Line
+            strLine.Add("ST2," + strATSname + ",S9 HP,0,0,0,0,0," + Convert.ToString(dblATS_E) + "," + Convert.ToString(dblATS_N) + "," + Convert.ToString(dblATS_H));
+            int iLineIndex = 1;
+            for (int i = 0; i < iPrismCounter; i++)
+            {
+                string strName = prismCoords[i].Name;
+
+                string strE = String.Format("{0:0.000}", prismCoords[i].E);
+                string strN = String.Format("{0:0.000}", prismCoords[i].N);
+                string strH = String.Format("{0:0.000}", prismCoords[i].H);
+
+                var answer = Join(dblATS_E, dblATS_N, prismCoords[i].E, prismCoords[i].N);
+                double HA_F1 = (answer.Item1 / dblGonToRad) - dblOrrCorr;
+
+                if (HA_F1 < 0) { HA_F1 = HA_F1 + 400; }
+
+                double HA_F2 = HA_F1 - 200;
+                if (HA_F2 < 0) { HA_F2 = HA_F2 + 400.0; }
+                HA_F1 = Math.Round(HA_F1, 4);
+                HA_F2 = Math.Round(HA_F2, 4);
+                double SD = Math.Round(Math.Sqrt(Math.Pow((dblATS_E - prismCoords[i].E), 2) + Math.Pow((dblATS_N - prismCoords[i].N), 2) + Math.Pow((dblATS_H - prismCoords[i].H), 2)), 3);
+                double dblDh = prismCoords[i].H - dblATS_H;
+
+                double VA_F1 = Math.Round(100 - (Math.Asin(dblDh / SD) / dblGonToRad), 4);
+                double VA_F2 = Math.Round((400 - VA_F1), 4);
+                string strLineIndex = Convert.ToString(iLineIndex);
+                string strHA_F1 = String.Format("{0:0.0000}", HA_F1);
+                string strHA_F2 = String.Format("{0:0.0000}", HA_F2); 
+                string strVA_F1 = String.Format("{0:0.0000}", VA_F1); 
+                string strVA_F2 = String.Format("{0:0.0000}", VA_F2);
+                string strSD = String.Format("{0:0.0000}", SD);
+                string strMode = (SD > 30) ? "3" : "2";
+                string strTargetCoords = Convert.ToString(prismCoords[i].E) + "," + Convert.ToString(prismCoords[i].N) + "," + Convert.ToString(prismCoords[i].H);
+
+                
+                string strPart1 = strLineIndex + "," + strName + "," + strHA_F1 + ",0," + strVA_F1 + ",0," + strSD + "," + strMode + ",1,0," + strTargetCoords + ",0,0,1";
+                string strPart2 = "," + strHA_F1 + "," + strVA_F1 + "," + strSD + ",0,1,0";
+
+                string strFace1 = strPart1;
+                strLine.Add(strFace1);
+
+                string strPart3 = strLineIndex + "," + strName + "," + strHA_F2 + ",0," + strVA_F2 + ",0," + strSD + "," + strMode + ",2,0," + strTargetCoords + ",0,0,1";
+                string strPart4 = "," + strHA_F2 + "," + strVA_F2 + "," + strSD + ",0,1,0";
+                string strFace2 = strPart3;
+                strLine.Add(strFace2);
+
+                iLineIndex++;
+
+            }
+
+            strLine.Add("TheEnd");
+
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "ts files (*.ts)|*.ts";
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                System.IO.File.WriteAllText(saveFileDialog.FileName, Convert.ToString(strLine));
+
+                string strFileName = saveFileDialog.FileName.Replace(".ts", "");
+                strFileName = strFileName + ".ts";
+                if (File.Exists(strFileName)) { File.Delete(strFileName); }
+                
+                using (StreamWriter writetext = new(strFileName, false))
+                {
+                    int j = 0;
+                    do
+                    {
+                        writetext.WriteLine(strLine[j]);
+                        j++;
+                    } while (strLine[j] != "TheEnd");
+                    writetext.Close();
+                }
+
+
+            }
+
+
+
+
+        }
+
+
+
+
+
         //======[Methods]======================================
 
 
-        public Tuple<double, double> Join(double YA, double XA, double YB, double XB)
+        Tuple<double, double> Join(double YA, double XA, double YB, double XB)
         {
             //Purpose:
             //  To compute bearing, horizontal distance between 2 points
@@ -521,10 +681,21 @@ NextStep:
         }
 
 
-
-
-
-
+        public List<PrismCoords> readPrismCoordinates()
+        {
+            int iPrismCounter = -1;
+            List<PrismCoords> prismCoords = new();
+            foreach (var item in dgPrismCoords.Items.OfType<PrismCoords>())
+            {
+                var name = item.Name;
+                var E = Convert.ToDouble(item.E);
+                var N = Convert.ToDouble(item.N);
+                var H = Convert.ToDouble(item.H);
+                prismCoords.Add(new PrismCoords() { Name = name, E = E, N = N, H = H });
+                iPrismCounter++;
+            }
+            return prismCoords;
+        }
 
     }
 
